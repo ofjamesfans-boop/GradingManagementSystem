@@ -1,0 +1,5 @@
+@extends('layouts.app')
+@section('content')
+<div class="top"><h1>{{ $instructor->exists?'Edit':'Add' }} Instructor</h1><a class="btn" href="{{ route('instructors.index') }}">Back</a></div>
+<form class="card" method="post" action="{{ $instructor->exists?route('instructors.update',$instructor):route('instructors.store') }}">@csrf @if($instructor->exists)@method('put')@endif<div class="fields">@foreach(['employee_number'=>'Employee Number','first_name'=>'First Name','middle_name'=>'Middle Name','last_name'=>'Last Name','email'=>'Email'] as $name=>$label)<label>{{ $label }}<input name="{{ $name }}" type="{{ $name==='email'?'email':'text' }}" value="{{ old($name,$instructor->$name) }}" {{ $name==='middle_name'?'':'required' }}>@error($name)<span class="error">{{ $message }}</span>@enderror</label>@endforeach @unless($instructor->exists)<label>Initial Login Password<input type="password" name="password" minlength="8" autocomplete="new-password" required>@error('password')<span class="error">{{ $message }}</span>@enderror</label>@endunless</div><div class="actions" style="margin-top:18px"><button class="btn primary">Save Instructor</button></div></form>
+@endsection

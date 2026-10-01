@@ -1,0 +1,10 @@
+@extends('layouts.app')
+@section('content')
+<div class="top"><div class="page-heading"><span class="heading-mark"></span><div><h1>{{ auth()->user()->isInstructor()?'My Classes':'Class Assignments' }}</h1><span class="muted">{{ $currentPeriod->school_year }} / {{ $currentPeriod->semester }}</span></div></div>@if(auth()->user()->isAdmin())<a class="btn primary" href="{{ route('classes.create') }}"><i data-lucide="plus"></i>Assign Class</a>@endif</div>
+<div class="actions" style="margin-bottom:16px"><div class="filter-tabs"><a @class(['active'=>!$showAll]) href="{{ route('classes.index') }}">Current Semester</a><a @class(['active'=>$showAll]) href="{{ route('classes.index',['period'=>'all']) }}">All Periods</a></div></div>
+<div class="card data-card"><div class="table-wrap"><table class="mobile-actions-table mobile-classes-table"><thead><tr><th>Subject</th><th>Section</th><th>Instructor</th><th>Academic Period</th><th>Students</th><th>Actions</th></tr></thead><tbody>
+@forelse($assignments as $assignment)
+<tr><td><span class="row-title">{{ $assignment->subject->subject_code }}</span><span class="row-subtitle">{{ $assignment->subject->subject_name }}</span><span class="row-subtitle mobile-class-section">Section {{ $assignment->section->section_name }}</span><span class="row-subtitle mobile-class-period">{{ $assignment->schoolYear->school_year }} / {{ $assignment->schoolYear->semester }}</span></td><td>{{ $assignment->section->section_name }}</td><td>{{ $assignment->instructor->full_name }}</td><td>{{ $assignment->schoolYear->school_year }} / {{ $assignment->schoolYear->semester }}</td><td>{{ $assignment->enrollments_count }}</td><td><a class="btn" href="{{ route('classes.show',$assignment) }}"><i data-lucide="users"></i>{{ auth()->user()->isInstructor()?'Gradebook':'View Class' }}</a></td></tr>
+@empty<tr><td colspan="6" class="empty-state"><i data-lucide="school"></i><strong>No classes found.</strong><span>{{ $showAll?'No assignments have been created.':'No classes in the current semester.' }}</span></td></tr>@endforelse
+</tbody></table></div></div><div class="pagination">{{ $assignments->links() }}</div>
+@endsection
