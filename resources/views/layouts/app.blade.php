@@ -3,6 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="{{ csrf_token() }}"><title>{{ config('app.name') }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+.popup-menu[data-menu]{position:fixed;z-index:1090;top:0;right:auto;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
 /* Keep header menus above sticky table cells throughout the shared layout. */
 .appbar{position:relative;z-index:100;overflow:visible}
 .gf-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px}.gf-pagination-summary{margin:0;color:var(--muted)}.gf-pagination-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.gf-pagination-link{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font-weight:700}.gf-pagination-link:hover{border-color:var(--green);color:var(--green)}.gf-pagination-link:focus-visible{outline:2px solid var(--green);outline-offset:2px}.gf-pagination-link[aria-current="page"]{background:var(--green);border-color:var(--green);color:#fff}.gf-pagination-link[aria-disabled="true"]{color:var(--muted);background:var(--bg)}.gf-pagination-gap{padding:0 4px}@media(max-width:480px){.gf-pagination{justify-content:center}.gf-pagination-summary{width:100%;text-align:center}}
@@ -126,6 +127,29 @@ input,select{width:100%;min-height:43px;padding:0 12px;border:1px solid var(--li
     const progress = document.getElementById('ajax-progress');
     const content = () => document.querySelector('.page-content');
     const icons = () => window.lucide && lucide.createIcons();
+    // Place dropdowns at body level, outside the header's backdrop-filter context.
+    document.querySelectorAll('.popup-menu[data-menu]').forEach(menu => document.body.appendChild(menu));
+    const closeMenus = () => {
+        document.querySelectorAll('.popup-menu.open').forEach(menu => menu.classList.remove('open'));
+        document.querySelectorAll('[data-menu-toggle]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+    };
+    document.querySelectorAll('[data-menu-toggle]').forEach(button => {
+        button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-controls', `header-menu-${button.dataset.menuToggle}`);
+        const menu = document.querySelector(`[data-menu="${button.dataset.menuToggle}"]`);
+        if (menu) menu.id = `header-menu-${button.dataset.menuToggle}`;
+    });
+    const positionMenu = (menu, button) => {
+        const rect = button.getBoundingClientRect();
+        const gap = 12;
+        const width = menu.getBoundingClientRect().width;
+        const top = Math.min(rect.bottom + 9, window.innerHeight - gap);
+        menu.style.left = `${Math.max(gap, Math.min(rect.right - width, window.innerWidth - width - gap))}px`;
+        menu.style.top = `${top}px`;
+        menu.style.maxHeight = `${Math.max(0, window.innerHeight - top - gap)}px`;
+    };
+    window.addEventListener('resize', closeMenus);
+    window.addEventListener('scroll', closeMenus);
     const closeMobileNav = () => {
         document.body.classList.remove('mobile-nav-open');
         const toggle = document.querySelector('[data-mobile-nav-toggle]');
@@ -160,6 +184,7 @@ input,select{width:100%;min-height:43px;padding:0 12px;border:1px solid var(--li
         if (!state) setTimeout(() => progress.className = 'ajax-progress', 350);
     };
     const render = (html, url, push = true) => {
+        closeMenus();
         closeMobileNav();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const next = doc.querySelector('.page-content');
@@ -206,8 +231,13 @@ input,select{width:100%;min-height:43px;padding:0 12px;border:1px solid var(--li
         if (toggle) {
             event.stopPropagation();
             const menu = document.querySelector(`[data-menu="${toggle.dataset.menuToggle}"]`);
-            document.querySelectorAll('.popup-menu.open').forEach(item => item !== menu && item.classList.remove('open'));
-            menu?.classList.toggle('open');
+            const wasOpen = menu?.classList.contains('open');
+            closeMenus();
+            if (menu && !wasOpen) {
+                positionMenu(menu, toggle);
+                menu.classList.add('open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
             if (toggle.dataset.menuToggle === 'notifications' && menu?.classList.contains('open') && toggle.querySelector('.notification-dot')) {
                 fetch('{{ route('notifications.seen') }}', {
                     method: 'POST',
@@ -216,13 +246,18 @@ input,select{width:100%;min-height:43px;padding:0 12px;border:1px solid var(--li
             }
             return;
         }
-        if (!event.target.closest('.popup-menu')) document.querySelectorAll('.popup-menu.open').forEach(item => item.classList.remove('open'));
+        if (!event.target.closest('.popup-menu')) closeMenus();
         const link = event.target.closest('a');
-        if (link) document.querySelectorAll('.popup-menu.open').forEach(item => item.classList.remove('open'));
+        if (link) closeMenus();
         if (!link || !document.querySelector('.shell') || link.origin !== location.origin || link.target || link.hasAttribute('download') || event.ctrlKey || event.metaKey || event.shiftKey) return;
         event.preventDefault(); request(link.href);
     });
     document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            const button = document.querySelector('[data-menu-toggle][aria-expanded="true"]');
+            closeMenus();
+            button?.focus();
+        }
         if (event.key === 'Escape' && document.body.classList.contains('mobile-nav-open')) closeMobileNav();
     });
     document.addEventListener('submit', event => {
