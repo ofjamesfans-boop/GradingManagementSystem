@@ -2,6 +2,12 @@
 set -eu
 
 : "${APP_KEY:?Set APP_KEY in Render environment variables}"
+
+# Accept the conventional name used by some Render database integrations.
+if [ -z "${DB_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+    export DB_URL="$DATABASE_URL"
+fi
+
 : "${DB_URL:?Set DB_URL to the Render PostgreSQL connection string}"
 
 echo "Starting GradeFlow..."
@@ -16,6 +22,7 @@ sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$port>/" /etc/apache2/sites-availab
 
 php artisan config:cache
 php artisan migrate --force
+php artisan db:seed --class=SubjectSeeder --force
 php artisan gradeflow:bootstrap-admin
 
 exec apache2-foreground

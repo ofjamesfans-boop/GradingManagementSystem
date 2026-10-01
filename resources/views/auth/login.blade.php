@@ -30,7 +30,7 @@
 .student-login .login-card>p{margin:7px 0 24px;font-size:13px}
 .login-fields{gap:16px}
 .login-fields input{min-height:46px}
-.login-fields button{min-height:46px;margin-top:4px}
+.login-fields button[type=submit]{min-height:46px;margin-top:4px}
 @media(max-width:760px){
   .login-shell:not(.student-login){grid-template-columns:1fr;grid-template-rows:140px minmax(0,1fr)}
   .login-shell:not(.student-login) .login-brand{display:flex;min-height:0;height:140px;padding:18px 20px}
@@ -47,7 +47,8 @@
 <style>
 .login-password-field{position:relative;display:block}
 .login-password-field input{width:100%;padding-right:48px}
-.login-password-toggle{position:absolute;top:50%;right:5px;transform:translateY(-50%);width:38px;height:38px;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.login-password-field input::-ms-reveal,.login-password-field input::-ms-clear{display:none}
+.login-password-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:36px;height:36px;min-height:0;margin:0;padding:0;display:grid;place-items:center;border:0;border-radius:6px;background:transparent;color:var(--muted);line-height:1;cursor:pointer}
 .login-password-toggle:hover,.login-password-toggle:focus-visible{color:var(--green);background:var(--green-soft)}
 .login-password-toggle svg{width:18px;height:18px}
 .login-shell:not(.student-login){position:relative;isolation:isolate;min-height:100dvh;grid-template-columns:minmax(0,1.2fr) minmax(390px,.86fr);grid-template-rows:76px minmax(0,1fr);align-items:center;padding:0 clamp(24px,5vw,86px) clamp(28px,5vh,64px);gap:0;background:#153f30 url('{{ asset('images/bcc-campus.webp') }}') center/cover no-repeat}
@@ -105,7 +106,8 @@ document.querySelectorAll('.login-password-toggle').forEach(button => button.add
     button.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
     button.setAttribute('title', visible ? 'Hide password' : 'Show password');
     button.setAttribute('aria-pressed', String(visible));
-    button.querySelector('i').setAttribute('data-lucide', visible ? 'eye-off' : 'eye');
+    button.querySelector('svg, i')?.remove();
+    button.insertAdjacentHTML('afterbegin', `<i data-lucide="${visible ? 'eye-off' : 'eye'}"></i>`);
     window.lucide?.createIcons();
 }));
 </script>

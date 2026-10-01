@@ -46,7 +46,7 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors(['email' => 'Invalid login details.'])->onlyInput('email');
+        return back()->withErrors(['password' => 'Invalid login details.'])->onlyInput('email');
     }
 
     public function logout(Request $request): RedirectResponse

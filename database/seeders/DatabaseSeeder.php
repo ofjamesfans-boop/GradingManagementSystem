@@ -8,6 +8,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Academic records and accounts are created through the application.
+        $this->call(SubjectSeeder::class);
     }
 }
