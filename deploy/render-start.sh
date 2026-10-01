@@ -2,7 +2,9 @@
 set -eu
 
 : "${APP_KEY:?Set APP_KEY in Render environment variables}"
-: "${DB_URL:?Set DB_URL to a persistent MySQL database URL}"
+: "${DB_URL:?Set DB_URL to the Render PostgreSQL connection string}"
+
+echo "Starting GradeFlow..."
 
 port="${PORT:-10000}"
 case "$port" in

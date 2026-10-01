@@ -3,6 +3,9 @@ services:
     name: gradeflow
     runtime: docker
     plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: /usr/local/bin/gradeflow-start
     healthCheckPath: /up
 
     envVars:
@@ -21,7 +24,7 @@ services:
       - key: DB_CONNECTION
         value: pgsql
 
-      - key: DATABASE_URL
+      - key: DB_URL
         fromDatabase:
           name: gradeflow-db
           property: connectionString
