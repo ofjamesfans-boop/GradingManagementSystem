@@ -24,5 +24,6 @@ php artisan config:cache
 php artisan migrate --force
 php artisan db:seed --class=SubjectSeeder --force
 php artisan gradeflow:bootstrap-admin
+php artisan db:seed --class=StudentSeeder --force
 
 exec apache2-foreground
